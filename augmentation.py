@@ -52,23 +52,20 @@ def elastic_transform(image, label, alpha=10, sigma=2, alpha_affine=2, random_st
     # Random affine
     center_square = np.float32(shape_size) // 2
     square_size = min(shape_size) // 3
-    # pts1: 仿射变换前的点(3个点)
+
     pts1 = np.float32([center_square + square_size,
                        [center_square[0] + square_size,
                         center_square[1] - square_size],
                        center_square - square_size])
-    # pts2: 仿射变换后的点
+
     pts2 = pts1 + random_state.uniform(-alpha_affine, alpha_affine,
                                        size=pts1.shape).astype(np.float32)
-    # 仿射变换矩阵
+
     M = cv2.getAffineTransform(pts1, pts2)
-    # 对image进行仿射变换.
+
     imageB = cv2.warpAffine(image, M, shape_size[::-1], borderMode=cv2.BORDER_REFLECT_101)
     imageA = cv2.warpAffine(label, M, shape_size[::-1], borderMode=cv2.BORDER_REFLECT_101)
 
-    # generate random displacement fields
-    # random_state.rand(*shape)会产生一个和shape一样打的服从[0,1]均匀分布的矩阵
-    # *2-1是为了将分布平移到[-1, 1]的区间, alpha是控制变形强度的变形因子
     dx = gaussian_filter((random_state.rand(*shape) * 2 - 1), sigma) * alpha
     dy = gaussian_filter((random_state.rand(*shape) * 2 - 1), sigma) * alpha
     # generate meshgrid
@@ -106,7 +103,7 @@ def augment_data(images,masks,save_path,augment=True):
             aug = RandomGamma( always_apply=True, p=1.0)
             augmented = aug(image=x0, mask=y0)
             x1 = augmented["image"]
-            y1 = augmented["mask"] #원래는 블러,로테 2개했음
+            y1 = augmented["mask"]
 
             aug = CLAHE( always_apply=True, p=1.0)
             augmented = aug(image=x, mask=y)
